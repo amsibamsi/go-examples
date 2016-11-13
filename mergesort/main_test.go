@@ -110,6 +110,47 @@ func BenchmarkParMergeSort(b *testing.B) {
 	}
 }
 
+func TestPar2MergeSort(t *testing.T) {
+	for _, test := range Tests {
+		t.Run(fmt.Sprintf("%v", test.original), func(t *testing.T) {
+			l := make([]int, len(test.original))
+			copy(l, test.original)
+			Par2MergeSort(l)
+			for i := range test.sorted {
+				if l[i] != test.sorted[i] {
+					t.Fatalf("got '%v', expected '%v'", l, test.sorted)
+				}
+			}
+		})
+	}
+}
+
+func TestPar2MergeSortRandom(t *testing.T) {
+	rand.Seed(time.Now().UTC().UnixNano())
+	for i := 0; i < 1e3; i++ {
+		t.Run(fmt.Sprintf("random %v", i), func(t *testing.T) {
+			a := randArray(1e3, MaxInt)
+			b := make([]int, len(a))
+			copy(b, a)
+			sort.Ints(a)
+			Par2MergeSort(b)
+			for j := range a {
+				if b[j] != a[j] {
+					t.Fatalf("got '%v', expected '%v'", b[j], a[j])
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkPar2MergeSort(b *testing.B) {
+	rand.Seed(0)
+	for i := 0; i < b.N; i++ {
+		a := randArray(1e4, MaxInt)
+		Par2MergeSort(a)
+	}
+}
+
 func BenchmarkSort(b *testing.B) {
 	rand.Seed(0)
 	for i := 0; i < b.N; i++ {
