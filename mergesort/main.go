@@ -1,6 +1,7 @@
 package mergesort
 
 import (
+	"fmt"
 	"runtime"
 	"sync"
 )
@@ -145,4 +146,76 @@ func Par2MergeSort(a []int) {
 	workers.Wait()
 	close(results)
 	copy(a, src)
+}
+
+func merge(a, buf []int, start, end int, recur bool) {
+	length := end - start + 1
+	src := a
+	dst := buf
+	startSize := 1
+	if !recur {
+		for startSize < length/2 {
+			startSize *= 2
+		}
+	}
+	fmt.Printf("merge %v-%v, length %v, size %v\n", start, end, length, startSize)
+	for size := startSize; size < length; size *= 2 {
+		fmt.Printf("merge size loop %v\n", size)
+		dstInd := start
+		for part := start; part < end; part += 2 * size {
+			left := part
+			right := part + size
+			for left < part+size && left <= end && right < part+2*size && right <= end {
+				if src[left] <= src[right] {
+					dst[dstInd] = src[left]
+					left++
+				} else {
+					dst[dstInd] = src[right]
+					right++
+				}
+				dstInd++
+			}
+			for left < part+size && left <= end {
+				dst[dstInd] = src[left]
+				dstInd++
+				left++
+			}
+			for right < part+2*size && right <= end {
+				dst[dstInd] = src[right]
+				dstInd++
+				right++
+			}
+		}
+		src, dst = dst, src
+	}
+	copy(a[start:end+1], src[start:end+1])
+	fmt.Printf("merged %v-%v, res %v\n", start, end, src[start:end+1])
+}
+
+func recMergeSort(a, buf []int, start, end, tasks int) {
+	fmt.Printf("mergesort %v-%v\n", start, end)
+	if (end - start) > 0 {
+		if tasks < runtime.NumCPU() {
+			wg := sync.WaitGroup{}
+			mid := start + (end-start)/2
+			wg.Add(2)
+			go func() {
+				recMergeSort(a, buf, start, mid, tasks*2)
+				wg.Done()
+			}()
+			go func() {
+				recMergeSort(a, buf, mid+1, end, tasks*2)
+				wg.Done()
+			}()
+			wg.Wait()
+			merge(a, buf, start, end, false)
+		} else {
+			merge(a, buf, start, end, true)
+		}
+	}
+}
+
+func RecMergeSort(a []int) {
+	buf := make([]int, len(a))
+	recMergeSort(a, buf, 0, len(a)-1, 1)
 }

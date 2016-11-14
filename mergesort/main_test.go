@@ -158,3 +158,23 @@ func BenchmarkSort(b *testing.B) {
 		sort.Ints(a)
 	}
 }
+
+func TestRecMergeSort(t *testing.T) {
+	Tests := []struct {
+		original, sorted []int
+	}{
+		{[]int{3, 2, 1, 0}, []int{0, 1, 2, 3}},
+	}
+	for _, test := range Tests {
+		t.Run(fmt.Sprintf("%v", test.original), func(t *testing.T) {
+			l := make([]int, len(test.original))
+			copy(l, test.original)
+			RecMergeSort(l)
+			for i := range test.sorted {
+				if l[i] != test.sorted[i] {
+					t.Fatalf("got '%v', expected '%v'", l, test.sorted)
+				}
+			}
+		})
+	}
+}
