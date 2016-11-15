@@ -1,7 +1,6 @@
 package mergesort
 
 import (
-	"fmt"
 	"runtime"
 	"sync"
 )
@@ -148,21 +147,13 @@ func Par2MergeSort(a []int) {
 	copy(a, src)
 }
 
-func merge(a, buf []int, start, end int, recur bool) {
+func recMerge(a, buf []int, start, end int) {
 	length := end - start + 1
 	src := a
 	dst := buf
-	startSize := 1
-	if !recur {
-		for startSize < length/2 {
-			startSize *= 2
-		}
-	}
-	fmt.Printf("merge %v-%v, length %v, size %v\n", start, end, length, startSize)
-	for size := startSize; size < length; size *= 2 {
-		fmt.Printf("merge size loop %v\n", size)
+	for size := 1; size < length; size *= 2 {
 		dstInd := start
-		for part := start; part < end; part += 2 * size {
+		for part := start; part <= end; part += 2 * size {
 			left := part
 			right := part + size
 			for left < part+size && left <= end && right < part+2*size && right <= end {
@@ -189,15 +180,40 @@ func merge(a, buf []int, start, end int, recur bool) {
 		src, dst = dst, src
 	}
 	copy(a[start:end+1], src[start:end+1])
-	fmt.Printf("merged %v-%v, res %v\n", start, end, src[start:end+1])
+}
+
+func merge(a, buf []int, start, mid, end int) {
+	left := start
+	right := mid + 1
+	ind := start
+	for left <= mid && right <= end {
+		if a[left] <= a[right] {
+			buf[ind] = a[left]
+			left++
+		} else {
+			buf[ind] = a[right]
+			right++
+		}
+		ind++
+	}
+	for left <= mid {
+		buf[ind] = a[left]
+		ind++
+		left++
+	}
+	for right <= end {
+		buf[ind] = a[right]
+		ind++
+		right++
+	}
+	copy(a[start:end+1], buf[start:end+1])
 }
 
 func recMergeSort(a, buf []int, start, end, tasks int) {
-	fmt.Printf("mergesort %v-%v\n", start, end)
 	if (end - start) > 0 {
 		if tasks < runtime.NumCPU() {
-			wg := sync.WaitGroup{}
 			mid := start + (end-start)/2
+			wg := sync.WaitGroup{}
 			wg.Add(2)
 			go func() {
 				recMergeSort(a, buf, start, mid, tasks*2)
@@ -208,9 +224,9 @@ func recMergeSort(a, buf []int, start, end, tasks int) {
 				wg.Done()
 			}()
 			wg.Wait()
-			merge(a, buf, start, end, false)
+			merge(a, buf, start, mid, end)
 		} else {
-			merge(a, buf, start, end, true)
+			recMerge(a, buf, start, end)
 		}
 	}
 }

@@ -18,6 +18,7 @@ var (
 		{[]int{1}, []int{1}},
 		{[]int{1, 1, 1, 2, 1e10, 1, 1, 1}, []int{1, 1, 1, 1, 1, 1, 2, 1e10}},
 	}
+	BenchmarkLength = int(1e5)
 )
 
 func randArray(length, max int) []int {
@@ -61,14 +62,6 @@ func TestMergeSortRandom(t *testing.T) {
 	}
 }
 
-func BenchmarkMergeSort(b *testing.B) {
-	rand.Seed(0)
-	for i := 0; i < b.N; i++ {
-		a := randArray(1e4, MaxInt)
-		MergeSort(a)
-	}
-}
-
 func TestParMergeSort(t *testing.T) {
 	for _, test := range Tests {
 		t.Run(fmt.Sprintf("%v", test.original), func(t *testing.T) {
@@ -99,14 +92,6 @@ func TestParMergeSortRandom(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func BenchmarkParMergeSort(b *testing.B) {
-	rand.Seed(0)
-	for i := 0; i < b.N; i++ {
-		a := randArray(1e4, MaxInt)
-		ParMergeSort(a)
 	}
 }
 
@@ -143,28 +128,7 @@ func TestPar2MergeSortRandom(t *testing.T) {
 	}
 }
 
-func BenchmarkPar2MergeSort(b *testing.B) {
-	rand.Seed(0)
-	for i := 0; i < b.N; i++ {
-		a := randArray(1e4, MaxInt)
-		Par2MergeSort(a)
-	}
-}
-
-func BenchmarkSort(b *testing.B) {
-	rand.Seed(0)
-	for i := 0; i < b.N; i++ {
-		a := randArray(1e4, MaxInt)
-		sort.Ints(a)
-	}
-}
-
 func TestRecMergeSort(t *testing.T) {
-	Tests := []struct {
-		original, sorted []int
-	}{
-		{[]int{3, 2, 1, 0}, []int{0, 1, 2, 3}},
-	}
 	for _, test := range Tests {
 		t.Run(fmt.Sprintf("%v", test.original), func(t *testing.T) {
 			l := make([]int, len(test.original))
@@ -176,5 +140,63 @@ func TestRecMergeSort(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestRecMergeSortRandom(t *testing.T) {
+	rand.Seed(time.Now().UTC().UnixNano())
+	for i := 0; i < 1e3; i++ {
+		t.Run(fmt.Sprintf("random %v", i), func(t *testing.T) {
+			a := randArray(1e3, MaxInt)
+			b := make([]int, len(a))
+			copy(b, a)
+			sort.Ints(a)
+			RecMergeSort(b)
+			for j := range a {
+				if b[j] != a[j] {
+					t.Fatalf("got '%v', expected '%v'", b[j], a[j])
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkSort(b *testing.B) {
+	rand.Seed(0)
+	for i := 0; i < b.N; i++ {
+		a := randArray(BenchmarkLength, MaxInt)
+		sort.Ints(a)
+	}
+}
+
+func BenchmarkMergeSort(b *testing.B) {
+	rand.Seed(0)
+	for i := 0; i < b.N; i++ {
+		a := randArray(BenchmarkLength, MaxInt)
+		MergeSort(a)
+	}
+}
+
+func BenchmarkParMergeSort(b *testing.B) {
+	rand.Seed(0)
+	for i := 0; i < b.N; i++ {
+		a := randArray(BenchmarkLength, MaxInt)
+		ParMergeSort(a)
+	}
+}
+
+func BenchmarkPar2MergeSort(b *testing.B) {
+	rand.Seed(0)
+	for i := 0; i < b.N; i++ {
+		a := randArray(BenchmarkLength, MaxInt)
+		Par2MergeSort(a)
+	}
+}
+
+func BenchmarkRecMergeSort(b *testing.B) {
+	rand.Seed(0)
+	for i := 0; i < b.N; i++ {
+		a := randArray(BenchmarkLength, MaxInt)
+		RecMergeSort(a)
 	}
 }
