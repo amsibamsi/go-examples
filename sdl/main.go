@@ -89,13 +89,13 @@ func main() {
 		C.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255)
 		C.SDL_RenderClear(renderer)
 		surface := C.TTF_RenderText_Solid(font, text, color)
-		C.free(unsafe.Pointer(text))
 		if surface == nil {
 			ttf_error()
 		}
+		C.free(unsafe.Pointer(text))
 		msg := C.SDL_CreateTextureFromSurface(renderer, surface)
-		if surface == nil {
-			ttf_error()
+		if msg == nil {
+			sdl_error()
 		}
 		rect := C.struct_SDL_Rect{250, 250, 300, 100}
 		if C.SDL_RenderCopy(renderer, msg, nil, &rect) < 0 {
