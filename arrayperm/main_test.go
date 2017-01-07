@@ -2,8 +2,18 @@ package arrayperm
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 )
+
+func randomArray() []int {
+	rand.Seed(42)
+	arr := make([]int, rand.Intn(1e2))
+	for i := range arr {
+		arr[i] = rand.Intn(1e4)
+	}
+	return arr
+}
 
 func TestArrayPermutations(t *testing.T) {
 	tests := []struct {
@@ -62,5 +72,16 @@ func TestArrayPermutations(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func BenchmarkArrayPermutations(b *testing.B) {
+	a := make([][]int, 10)
+	for i := range a {
+		a[i] = randomArray()
+	}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		ArrayPermutations(a)
 	}
 }
