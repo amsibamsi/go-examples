@@ -1,17 +1,24 @@
 #include <stdio.h>
+#include <string.h>
 #include <CL/cl.h>
 #include "opencl.h"
 
 char* get_error(cl_int error) {
   switch(error) {
     case CL_INVALID_VALUE: return "CL_INVALID_VALUE";
-    case CL_OUT_OF_HOST_MEMORY: return "CL_OUT_OF_HOST_MEMORY";
     case CL_INVALID_PLATFORM: return "CL_INVALID_PLATFORM";
+    case CL_INVALID_DEVICE: return "CL_INVALID_DEVICE";
     case CL_INVALID_DEVICE_TYPE: return "CL_INVALID_DEVICE_TYPE";
-    case CL_DEVICE_NOT_FOUND: return "CL_DEVICE_NOT_FOUND";
-    case CL_OUT_OF_RESOURCES: return "CL_OUT_OF_RESOURCES";
+    case CL_INVALID_CONTEXT: return "CL_INVALID_CONTEXT";
     case CL_INVALID_PROPERTY: return "CL_INVALID_PROPERTY";
+    case CL_INVALID_BINARY: return "CL_INVALID_BINARY";
+    case CL_INVALID_BUILD_OPTIONS: return "CL_INVALID_BUILD_OPTIONS";
+    case CL_DEVICE_NOT_FOUND: return "CL_DEVICE_NOT_FOUND";
     case CL_DEVICE_NOT_AVAILABLE: return "CL_DEVICES_NOT_AVAILABLE";
+    case CL_OUT_OF_RESOURCES: return "CL_OUT_OF_RESOURCES";
+    case CL_OUT_OF_HOST_MEMORY: return "CL_OUT_OF_HOST_MEMORY";
+    case CL_COMPILER_NOT_AVAILABLE: return "CL_COMPILER_NOT_AVAILABLE";
+    case CL_BUILD_PROGRAM_FAILURE: return "CL_BUILD_PROGRAM_FAILURE";
     default: return "Unknown";
   }
 }
@@ -108,3 +115,28 @@ char* create_context(cl_device_id *device, cl_context *context) {
   }
   return NULL;
 }
+
+char* create_program(cl_context context, cl_device_id *device, cl_program *program) {
+  cl_int err;
+  const char* src[] = {
+    "kernel void sum(global int *a, global int *b, global int *sum) {",
+    "sum = a + b;",
+    "}",
+  };
+  size_t num_lines = sizeof(src)/sizeof(src[0]);
+  size_t length[num_lines];
+  int i;
+  for (i=0; i<num_lines; i++) {
+    length[i] = strlen(src[i]);
+  }
+  *program = clCreateProgramWithSource(context, num_lines, src, length, &err);
+  if (err != CL_SUCCESS) {
+    return get_error(err);
+  }
+  err = clBuildProgram(*program, 1, device, NULL, NULL, NULL);
+  if (err != CL_SUCCESS) {
+    return get_error(err);
+  }
+  return NULL;
+}
+

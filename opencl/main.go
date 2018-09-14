@@ -24,4 +24,8 @@ func main() {
 	if err := C.create_context(&device, &context); err != nil {
 		log.Fatal(C.GoString(err))
 	}
+	var program C.cl_program
+	if err := C.create_program(context, &device, &program); err != nil {
+		log.Fatal(C.GoString(err))
+	}
 }
