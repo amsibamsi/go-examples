@@ -1,6 +1,9 @@
 package median
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 func median(list []float64) float64 {
 	l := len(list)
@@ -16,31 +19,33 @@ func median(list []float64) float64 {
 	return (sorted[l/2] + sorted[l/2-1]) / 2
 }
 
-// TODO: review
 func median2(list []float64) float64 {
 	if len(list) == 0 {
 		return 0
 	}
 	l := list
 	k := len(list) / 2
-	for {
-		left := make([]float64, len(l))
-		right := make([]float64, len(l))
-		p := l[0]
+	pi := 0
+	for i := 10; i > 0; i-- {
+		left := make([]float64, 0)
+		right := make([]float64, 0)
+		p := l[pi%len(l)]
+		pi++
 		for _, n := range l {
 			if n <= p {
 				left = append(left, n)
-			} else {
-				right = append(right, n)
+				continue
 			}
+			right = append(right, n)
 		}
-		if len(left)-1 == k {
-			return p
-		}
+		fmt.Printf("i=%v\nl: %v\nk=%v\np=%v\nlr: %v|%v\n\n", i, l, k, p, left, right)
 		if len(left) == len(right) {
 			return p
 		}
-		if len(left) > k+1 {
+		if len(left) == len(right)+1 {
+			return p
+		}
+		if len(left) > len(right)+1 {
 			l = left
 			continue
 		}
@@ -48,4 +53,5 @@ func median2(list []float64) float64 {
 		l = right
 		k = k - len(left)
 	}
+	return 0
 }
