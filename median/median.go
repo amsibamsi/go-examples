@@ -1,11 +1,10 @@
 package median
 
 import (
-	"fmt"
 	"sort"
 )
 
-func median(list []float64) float64 {
+func medianSort(list []float64) float64 {
 	l := len(list)
 	if l == 0 {
 		return 0
@@ -19,39 +18,44 @@ func median(list []float64) float64 {
 	return (sorted[l/2] + sorted[l/2-1]) / 2
 }
 
-func median2(list []float64) float64 {
-	if len(list) == 0 {
+func medianKSelect(l []float64) float64 {
+	if len(l) == 0 {
 		return 0
 	}
-	l := list
+	list := l
 	k := len(list) / 2
-	pi := 0
-	for i := 10; i > 0; i-- {
+	if len(list)%2 == 1 {
+		k++
+	}
+	pivotIndex := 0
+	for {
 		left := make([]float64, 0)
+		pivots := make([]float64, 0)
 		right := make([]float64, 0)
-		p := l[pi%len(l)]
-		pi++
-		for _, n := range l {
-			if n <= p {
+		// Rotate pivot to not get stuck
+		pivotIndex = (pivotIndex + 1) % len(list)
+		pivot := list[pivotIndex]
+		for _, n := range list {
+			if n < pivot {
 				left = append(left, n)
+				continue
+			}
+			if n == pivot {
+				pivots = append(pivots, n)
 				continue
 			}
 			right = append(right, n)
 		}
-		fmt.Printf("i=%v\nl: %v\nk=%v\np=%v\nlr: %v|%v\n\n", i, l, k, p, left, right)
-		if len(left) == len(right) {
-			return p
+		//fmt.Printf("%v\nk=%v\npivot=%v\n%v|%v|%v\n\n", list, k, pivot, left, pivots, right)
+		if k <= len(left) {
+			list = left
 		}
-		if len(left) == len(right)+1 {
-			return p
+		if k > len(left) && k <= len(left)+len(pivots) {
+			return pivot
 		}
-		if len(left) > len(right)+1 {
-			l = left
-			continue
+		if k > len(left)+len(pivots) {
+			list = right
+			k = k - len(left) - len(pivots)
 		}
-		//if len(right) > k
-		l = right
-		k = k - len(left)
 	}
-	return 0
 }
